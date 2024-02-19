@@ -1,5 +1,8 @@
 # VINS-Fusion-gpu
 This repository is a version of VINS-Fusion with GPU acceleration. It can run on Nvidia TX2 in real-time. 
+
+**This fork was created due to modifications needed in order to get the algorithm to work with Nvidia Jetson Orin NX. Tested with Ubuntu 20.04 LTS, OpenCV 4.5.4 with CUDA and Ceres Solver 2.1.0.**
+
 ## 1. Prerequisites  
 The essential software environment is same as VINS-Fusion. Besides, it requires OpenCV cuda version.(Only test it on OpenCV 3.4.1).
 ## 2. Usage
