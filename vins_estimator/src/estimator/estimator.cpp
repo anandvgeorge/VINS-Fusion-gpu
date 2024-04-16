@@ -102,7 +102,8 @@ void Estimator::inputIMU(double t, const Vector3d &linearAcceleration, const Vec
 
     fastPredictIMU(t, linearAcceleration, angularVelocity);
     if (solver_flag == NON_LINEAR)
-        pubLatestOdometry(latest_P, latest_Q, latest_V, t);
+        // pubLatestOdometry(latest_P, latest_Q, latest_V, t);
+        pubLatestOdometry(latest_P, latest_Q, latest_V, t, un_gyr_); // publish gyro values as twist.rotation along with the latest odom
 }
 
 void Estimator::inputFeature(double t, const map<int, vector<pair<int, Eigen::Matrix<double, 7, 1>>>> &featureFrame)
@@ -339,6 +340,7 @@ void Estimator::processIMU(double t, double dt, const Vector3d &linear_accelerat
         int j = frame_count;         
         Vector3d un_acc_0 = Rs[j] * (acc_0 - Bas[j]) - g;
         Vector3d un_gyr = 0.5 * (gyr_0 + angular_velocity) - Bgs[j];
+        un_gyr_ = un_gyr;
         Rs[j] *= Utility::deltaQ(un_gyr * dt).toRotationMatrix();
         Vector3d un_acc_1 = Rs[j] * (linear_acceleration - Bas[j]) - g;
         Vector3d un_acc = 0.5 * (un_acc_0 + un_acc_1);
@@ -1067,6 +1069,31 @@ void Estimator::optimization()
     ROS_DEBUG("Iterations : %d", static_cast<int>(summary.iterations.size()));
     //printf("solver costs: %f \n", t_solver.toc());
 
+    // COVARIANCE ESTIMATION /////////////////////////////////////////////
+    // https://github.com/HKUST-Aerial-Robotics/VINS-Fusion/issues/186
+    // https://github.com/HKUST-Aerial-Robotics/VINS-Mono/issues/74
+
+    ceres::Covariance::Options cov_options;
+    cov_options.num_threads = 6;
+    ceres::Covariance covariance(cov_options);
+    TicToc t_cov;
+
+    std::vector<std::pair<const double *, const double *>> covariance_blocks;
+    covariance_blocks.emplace_back(para_Pose[WINDOW_SIZE], para_Pose[WINDOW_SIZE]);
+    //        CHECK(covariance.Compute(covariance_blocks, &problem));
+    double covariance_pose[SIZE_POSE * SIZE_POSE];
+    if(covariance.Compute(covariance_blocks, &problem)) {
+        // double covariance_pose[SIZE_POSE * SIZE_POSE];
+        covariance.GetCovarianceBlock(para_Pose[WINDOW_SIZE], para_Pose[WINDOW_SIZE], covariance_pose);
+        for (auto x = std::begin(covariance_pose); x != std::end(covariance_pose);)
+            cout << *++x << " " << endl;
+        // printf("covariance solver costs: %f \n", t_cov.toc());
+        for(size_t i = 0; i < 36; i++)
+            covariance_matrix[i] = covariance_pose[i];
+    }
+
+    /////////////////////////////////////////////////////////////////////
+
     double2vector();
     //printf("frame_count: %d \n", frame_count);
 
@@ -1511,6 +1538,7 @@ void Estimator::fastPredictIMU(double t, Eigen::Vector3d linear_acceleration, Ei
     latest_time = t;
     Eigen::Vector3d un_acc_0 = latest_Q * (latest_acc_0 - latest_Ba) - g;
     Eigen::Vector3d un_gyr = 0.5 * (latest_gyr_0 + angular_velocity) - latest_Bg;
+    un_gyr_ = un_gyr;
     latest_Q = latest_Q * Utility::deltaQ(un_gyr * dt);
     Eigen::Vector3d un_acc_1 = latest_Q * (linear_acceleration - latest_Ba) - g;
     Eigen::Vector3d un_acc = 0.5 * (un_acc_0 + un_acc_1);

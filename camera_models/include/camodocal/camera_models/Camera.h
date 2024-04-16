@@ -6,6 +6,8 @@
 #include <opencv2/core/core.hpp>
 #include <vector>
 
+#include "OpenCV3.h"
+
 namespace camodocal
 {
 

@@ -19,7 +19,10 @@ find_package(catkin REQUIRED COMPONENTS
 set(OpenCV_DIR /usr/local/lib/cmake/opencv4)
 find_package(OpenCV REQUIRED)
 
-#message(WARNING "OpenCV_VERSION: ${OpenCV_VERSION}")
+message(WARNING "OpenCV library WARNING:")
+message(WARNING "    version: ${OpenCV_VERSION}")
+message(WARNING "    libraries: ${OpenCV_LIBS}")
+message(WARNING "    include path: ${OpenCV_INCLUDE_DIRS}")
 
 find_package(Ceres REQUIRED)
 

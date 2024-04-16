@@ -42,6 +42,7 @@ extern int IMAGE_ROW, IMAGE_COL;
 void registerPub(ros::NodeHandle &n);
 
 void pubLatestOdometry(const Eigen::Vector3d &P, const Eigen::Quaterniond &Q, const Eigen::Vector3d &V, double t);
+void pubLatestOdometry(const Eigen::Vector3d &P, const Eigen::Quaterniond &Q, const Eigen::Vector3d &V, double t, const Eigen::Vector3d &V_r);
 
 void pubTrackImage(const cv::Mat &imgTrack, const double t);
 

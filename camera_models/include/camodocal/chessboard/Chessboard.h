@@ -4,6 +4,8 @@
 #include <boost/shared_ptr.hpp>
 #include <opencv2/core/core.hpp>
 
+// #include "camodocal/camera_models/OpenCV3.h"
+
 namespace camodocal
 {
 

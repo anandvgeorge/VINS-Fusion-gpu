@@ -168,8 +168,10 @@ class Estimator
     Eigen::Matrix3d initR;
 
     double latest_time;
+    Eigen::Vector3d un_gyr_; // added to publish bias removed gyro value
     Eigen::Vector3d latest_P, latest_V, latest_Ba, latest_Bg, latest_acc_0, latest_gyr_0;
     Eigen::Quaterniond latest_Q;
+    double covariance_matrix[SIZE_POSE * SIZE_POSE];
 
     bool initFirstPoseFlag;
 };
